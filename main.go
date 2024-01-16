@@ -16,13 +16,16 @@ var fileNameRgx = regexp.MustCompile(`diff --git a/(\S+)`)
 var lineNumberRgx = regexp.MustCompile(`@@ -\d+,\d+ \+(\d+),\d+ @@`)
 func main() {
 	cmd := exec.Command("git", "diff")
-	output, err := cmd.Output()
+	outputBytes, err := cmd.Output()
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+	output := string(outputBytes)
+	if output == "" {
+		processAndPrintLine("No diff")
+	}	
 	var filename string
-	scanner := bufio.NewScanner(strings.NewReader(string(output)))
+	scanner := bufio.NewScanner(strings.NewReader(output))
 	for scanner.Scan() {
 		line := scanner.Text()
 
@@ -66,6 +69,9 @@ func processLineWithColor(line string) string {
 	}
 	if strings.HasPrefix(line, "./") {
 		return color.HiMagentaString(line)
+	}
+	if strings.HasPrefix(line, "No diff") {
+		return color.GreenString(line)
 	}
 
 	return line
