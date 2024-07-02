@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -12,11 +13,25 @@ import (
 	"github.com/fatih/color"
 )
 
-
 var fileNameRgx = regexp.MustCompile(`diff --git a/(\S+)`)
 var lineNumberRgx = regexp.MustCompile(`@@ -\d+,\d+ \+(\d+),\d+ @@`)
+
 func main() {
-	cmd := exec.Command("git", "diff")
+	args := os.Args[1:]
+	var firstArg string
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "--") || strings.HasPrefix(arg, "-") {
+			firstArg = arg
+			break
+		}
+	}
+	var cmd *exec.Cmd
+	if firstArg == "" {
+		cmd = exec.Command("git", "diff")
+	} else {
+		cmd = exec.Command("git", "diff", firstArg)
+	}
+
 	outputBytes, err := cmd.Output()
 	if err != nil {
 		log.Fatal(err)
@@ -24,7 +39,7 @@ func main() {
 	output := string(outputBytes)
 	if output == "" {
 		processAndPrintLine("No diff")
-	}	
+	}
 	var filename string
 	scanner := bufio.NewScanner(strings.NewReader(output))
 	for scanner.Scan() {
@@ -50,7 +65,6 @@ func main() {
 
 	time.Sleep(time.Millisecond * 50) //for :term in nvim
 }
-
 
 func processAndPrintLine(line string) {
 	colorizedLine := processLineWithColor(line)
