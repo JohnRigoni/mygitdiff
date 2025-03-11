@@ -16,6 +16,34 @@ import (
 var fileNameRgx = regexp.MustCompile(`diff --git a/(\S+)`)
 var lineNumberRgx = regexp.MustCompile(`@@ -\d+,\d+ \+(\d+),\d+ @@`)
 
+func processAndPrintLine(line string) {
+	colorizedLine := processLineWithColor(line)
+	fmt.Println(colorizedLine)
+}
+
+func processLineWithColor(line string) string {
+	if strings.HasPrefix(line, "+") {
+		return color.GreenString(line)
+	}
+	if strings.HasPrefix(line, "-") {
+		return color.RedString(line)
+	}
+	if strings.HasPrefix(line, "diff --git") {
+		return color.YellowString(line)
+	}
+	if strings.HasPrefix(line, "@@") {
+		return color.BlueString(line)
+	}
+	if strings.HasPrefix(line, "./") {
+		return color.HiMagentaString(line)
+	}
+	if strings.HasPrefix(line, "No diff") {
+		return color.GreenString(line)
+	}
+
+	return line
+}
+
 func main() {
 	args := os.Args[1:]
 	var firstArg string
@@ -64,32 +92,4 @@ func main() {
 	}
 
 	time.Sleep(time.Millisecond * 50) //for :term in nvim
-}
-
-func processAndPrintLine(line string) {
-	colorizedLine := processLineWithColor(line)
-	fmt.Println(colorizedLine)
-}
-
-func processLineWithColor(line string) string {
-	if strings.HasPrefix(line, "+") {
-		return color.GreenString(line)
-	}
-	if strings.HasPrefix(line, "-") {
-		return color.RedString(line)
-	}
-	if strings.HasPrefix(line, "diff --git") {
-		return color.YellowString(line)
-	}
-	if strings.HasPrefix(line, "@@") {
-		return color.BlueString(line)
-	}
-	if strings.HasPrefix(line, "./") {
-		return color.HiMagentaString(line)
-	}
-	if strings.HasPrefix(line, "No diff") {
-		return color.GreenString(line)
-	}
-
-	return line
 }
